@@ -71,10 +71,16 @@
         }
       }
     },
-    "CalculateLungHealthLogGroup": {
+    "RegisterLogGroup": {
       "Type": "AWS::Logs::LogGroup",
       "Properties": {
-        "LogGroupName": "/aws/lambda/lungHealthCalculator-dev-calculateLungHealth"
+        "LogGroupName": "/aws/lambda/my-lambda-service-dev-register"
+      }
+    },
+    "CalculateUnderscorescoreLogGroup": {
+      "Type": "AWS::Logs::LogGroup",
+      "Properties": {
+        "LogGroupName": "/aws/lambda/my-lambda-service-dev-calculate_score"
       }
     },
     "IamRoleLambdaExecution": {
@@ -102,7 +108,7 @@
               "Fn::Join": [
                 "-",
                 [
-                  "lungHealthCalculator",
+                  "my-lambda-service",
                   "dev",
                   "lambda"
                 ]
@@ -120,7 +126,7 @@
                   ],
                   "Resource": [
                     {
-                      "Fn::Sub": "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/lungHealthCalculator-dev*:*"
+                      "Fn::Sub": "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/my-lambda-service-dev*:*"
                     }
                   ]
                 },
@@ -131,7 +137,7 @@
                   ],
                   "Resource": [
                     {
-                      "Fn::Sub": "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/lungHealthCalculator-dev*:*:*"
+                      "Fn::Sub": "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/my-lambda-service-dev*:*:*"
                     }
                   ]
                 }
@@ -144,7 +150,7 @@
           "Fn::Join": [
             "-",
             [
-              "lungHealthCalculator",
+              "my-lambda-service",
               "dev",
               {
                 "Ref": "AWS::Region"
@@ -155,20 +161,25 @@
         }
       }
     },
-    "CalculateLungHealthLambdaFunction": {
+    "RegisterLambdaFunction": {
       "Type": "AWS::Lambda::Function",
       "Properties": {
         "Code": {
           "S3Bucket": {
             "Ref": "ServerlessDeploymentBucket"
           },
-          "S3Key": "serverless/lungHealthCalculator/dev/1723807596856-2024-08-16T11:26:36.856Z/lungHealthCalculator.zip"
+          "S3Key": "serverless/my-lambda-service/dev/1723723556193-2024-08-15T12:05:56.193Z/my-lambda-service.zip"
         },
-        "Handler": "handler.main",
-        "Runtime": "python3.9",
-        "FunctionName": "lungHealthCalculator-dev-calculateLungHealth",
+        "Handler": "app.register",
+        "Runtime": "python3.8",
+        "FunctionName": "my-lambda-service-dev-register",
         "MemorySize": 1024,
         "Timeout": 6,
+        "Environment": {
+          "Variables": {
+            "OTHER_ENV_VAR": "some-value"
+          }
+        },
         "Role": {
           "Fn::GetAtt": [
             "IamRoleLambdaExecution",
@@ -177,23 +188,63 @@
         }
       },
       "DependsOn": [
-        "CalculateLungHealthLogGroup"
+        "RegisterLogGroup"
       ]
     },
-    "CalculateLungHealthLambdaVersionC3KolbuGRVQqJ0m1rGVU2eZ84ystMqOwO8aVEPXxxk": {
+    "CalculateUnderscorescoreLambdaFunction": {
+      "Type": "AWS::Lambda::Function",
+      "Properties": {
+        "Code": {
+          "S3Bucket": {
+            "Ref": "ServerlessDeploymentBucket"
+          },
+          "S3Key": "serverless/my-lambda-service/dev/1723723556193-2024-08-15T12:05:56.193Z/my-lambda-service.zip"
+        },
+        "Handler": "app.calculate_score",
+        "Runtime": "python3.8",
+        "FunctionName": "my-lambda-service-dev-calculate_score",
+        "MemorySize": 1024,
+        "Timeout": 6,
+        "Environment": {
+          "Variables": {
+            "OTHER_ENV_VAR": "some-value"
+          }
+        },
+        "Role": {
+          "Fn::GetAtt": [
+            "IamRoleLambdaExecution",
+            "Arn"
+          ]
+        }
+      },
+      "DependsOn": [
+        "CalculateUnderscorescoreLogGroup"
+      ]
+    },
+    "RegisterLambdaVersionFOz0NFcP9ykoDiWGz0SMeVccCTUgSPQgu2BBvq8eolc": {
       "Type": "AWS::Lambda::Version",
       "DeletionPolicy": "Retain",
       "Properties": {
         "FunctionName": {
-          "Ref": "CalculateLungHealthLambdaFunction"
+          "Ref": "RegisterLambdaFunction"
         },
-        "CodeSha256": "3109zo1C9ewcKjxmXV2nt0p2zsIB8AVtL/lC0ytFPSc="
+        "CodeSha256": "GGlxoz72bfrPyxd/3Kp+7SloL/xfQhnFk/ItwyojiGU="
+      }
+    },
+    "CalculateUnderscorescoreLambdaVersionBDY5zE64uPCGUj5VMXw5wbHDNJz56MfuX08fGWlN08": {
+      "Type": "AWS::Lambda::Version",
+      "DeletionPolicy": "Retain",
+      "Properties": {
+        "FunctionName": {
+          "Ref": "CalculateUnderscorescoreLambdaFunction"
+        },
+        "CodeSha256": "GGlxoz72bfrPyxd/3Kp+7SloL/xfQhnFk/ItwyojiGU="
       }
     },
     "ApiGatewayRestApi": {
       "Type": "AWS::ApiGateway::RestApi",
       "Properties": {
-        "Name": "dev-lungHealthCalculator",
+        "Name": "dev-my-lambda-service",
         "EndpointConfiguration": {
           "Types": [
             "EDGE"
@@ -202,7 +253,7 @@
         "Policy": ""
       }
     },
-    "ApiGatewayResourceCalculateDashlungDashhealth": {
+    "ApiGatewayResourceRegister": {
       "Type": "AWS::ApiGateway::Resource",
       "Properties": {
         "ParentId": {
@@ -211,64 +262,34 @@
             "RootResourceId"
           ]
         },
-        "PathPart": "calculate-lung-health",
+        "PathPart": "register",
         "RestApiId": {
           "Ref": "ApiGatewayRestApi"
         }
       }
     },
-    "ApiGatewayMethodCalculateDashlungDashhealthOptions": {
-      "Type": "AWS::ApiGateway::Method",
+    "ApiGatewayResourceCalculatescore": {
+      "Type": "AWS::ApiGateway::Resource",
       "Properties": {
-        "AuthorizationType": "NONE",
-        "HttpMethod": "OPTIONS",
-        "MethodResponses": [
-          {
-            "StatusCode": "200",
-            "ResponseParameters": {
-              "method.response.header.Access-Control-Allow-Origin": true,
-              "method.response.header.Access-Control-Allow-Headers": true,
-              "method.response.header.Access-Control-Allow-Methods": true
-            },
-            "ResponseModels": {}
-          }
-        ],
-        "RequestParameters": {},
-        "Integration": {
-          "Type": "MOCK",
-          "RequestTemplates": {
-            "application/json": "{statusCode:200}"
-          },
-          "ContentHandling": "CONVERT_TO_TEXT",
-          "IntegrationResponses": [
-            {
-              "StatusCode": "200",
-              "ResponseParameters": {
-                "method.response.header.Access-Control-Allow-Origin": "'*'",
-                "method.response.header.Access-Control-Allow-Headers": "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,X-Amz-User-Agent,X-Amzn-Trace-Id'",
-                "method.response.header.Access-Control-Allow-Methods": "'OPTIONS,POST'"
-              },
-              "ResponseTemplates": {
-                "application/json": ""
-              }
-            }
+        "ParentId": {
+          "Fn::GetAtt": [
+            "ApiGatewayRestApi",
+            "RootResourceId"
           ]
         },
-        "ResourceId": {
-          "Ref": "ApiGatewayResourceCalculateDashlungDashhealth"
-        },
+        "PathPart": "calculate_score",
         "RestApiId": {
           "Ref": "ApiGatewayRestApi"
         }
       }
     },
-    "ApiGatewayMethodCalculateDashlungDashhealthPost": {
+    "ApiGatewayMethodRegisterPost": {
       "Type": "AWS::ApiGateway::Method",
       "Properties": {
         "HttpMethod": "POST",
         "RequestParameters": {},
         "ResourceId": {
-          "Ref": "ApiGatewayResourceCalculateDashlungDashhealth"
+          "Ref": "ApiGatewayResourceRegister"
         },
         "RestApiId": {
           "Ref": "ApiGatewayRestApi"
@@ -293,7 +314,7 @@
                 ":lambda:path/2015-03-31/functions/",
                 {
                   "Fn::GetAtt": [
-                    "CalculateLungHealthLambdaFunction",
+                    "RegisterLambdaFunction",
                     "Arn"
                   ]
                 },
@@ -305,10 +326,56 @@
         "MethodResponses": []
       },
       "DependsOn": [
-        "CalculateLungHealthLambdaPermissionApiGateway"
+        "RegisterLambdaPermissionApiGateway"
       ]
     },
-    "ApiGatewayDeployment1723807595252": {
+    "ApiGatewayMethodCalculatescorePost": {
+      "Type": "AWS::ApiGateway::Method",
+      "Properties": {
+        "HttpMethod": "POST",
+        "RequestParameters": {},
+        "ResourceId": {
+          "Ref": "ApiGatewayResourceCalculatescore"
+        },
+        "RestApiId": {
+          "Ref": "ApiGatewayRestApi"
+        },
+        "ApiKeyRequired": false,
+        "AuthorizationType": "NONE",
+        "Integration": {
+          "IntegrationHttpMethod": "POST",
+          "Type": "AWS_PROXY",
+          "Uri": {
+            "Fn::Join": [
+              "",
+              [
+                "arn:",
+                {
+                  "Ref": "AWS::Partition"
+                },
+                ":apigateway:",
+                {
+                  "Ref": "AWS::Region"
+                },
+                ":lambda:path/2015-03-31/functions/",
+                {
+                  "Fn::GetAtt": [
+                    "CalculateUnderscorescoreLambdaFunction",
+                    "Arn"
+                  ]
+                },
+                "/invocations"
+              ]
+            ]
+          }
+        },
+        "MethodResponses": []
+      },
+      "DependsOn": [
+        "CalculateUnderscorescoreLambdaPermissionApiGateway"
+      ]
+    },
+    "ApiGatewayDeployment1723723553093": {
       "Type": "AWS::ApiGateway::Deployment",
       "Properties": {
         "RestApiId": {
@@ -317,16 +384,53 @@
         "StageName": "dev"
       },
       "DependsOn": [
-        "ApiGatewayMethodCalculateDashlungDashhealthOptions",
-        "ApiGatewayMethodCalculateDashlungDashhealthPost"
+        "ApiGatewayMethodRegisterPost",
+        "ApiGatewayMethodCalculatescorePost"
       ]
     },
-    "CalculateLungHealthLambdaPermissionApiGateway": {
+    "RegisterLambdaPermissionApiGateway": {
       "Type": "AWS::Lambda::Permission",
       "Properties": {
         "FunctionName": {
           "Fn::GetAtt": [
-            "CalculateLungHealthLambdaFunction",
+            "RegisterLambdaFunction",
+            "Arn"
+          ]
+        },
+        "Action": "lambda:InvokeFunction",
+        "Principal": "apigateway.amazonaws.com",
+        "SourceArn": {
+          "Fn::Join": [
+            "",
+            [
+              "arn:",
+              {
+                "Ref": "AWS::Partition"
+              },
+              ":execute-api:",
+              {
+                "Ref": "AWS::Region"
+              },
+              ":",
+              {
+                "Ref": "AWS::AccountId"
+              },
+              ":",
+              {
+                "Ref": "ApiGatewayRestApi"
+              },
+              "/*/*"
+            ]
+          ]
+        }
+      }
+    },
+    "CalculateUnderscorescoreLambdaPermissionApiGateway": {
+      "Type": "AWS::Lambda::Permission",
+      "Properties": {
+        "FunctionName": {
+          "Fn::GetAtt": [
+            "CalculateUnderscorescoreLambdaFunction",
             "Arn"
           ]
         },
@@ -365,16 +469,25 @@
         "Ref": "ServerlessDeploymentBucket"
       },
       "Export": {
-        "Name": "sls-lungHealthCalculator-dev-ServerlessDeploymentBucketName"
+        "Name": "sls-my-lambda-service-dev-ServerlessDeploymentBucketName"
       }
     },
-    "CalculateLungHealthLambdaFunctionQualifiedArn": {
+    "RegisterLambdaFunctionQualifiedArn": {
       "Description": "Current Lambda function version",
       "Value": {
-        "Ref": "CalculateLungHealthLambdaVersionC3KolbuGRVQqJ0m1rGVU2eZ84ystMqOwO8aVEPXxxk"
+        "Ref": "RegisterLambdaVersionFOz0NFcP9ykoDiWGz0SMeVccCTUgSPQgu2BBvq8eolc"
       },
       "Export": {
-        "Name": "sls-lungHealthCalculator-dev-CalculateLungHealthLambdaFunctionQualifiedArn"
+        "Name": "sls-my-lambda-service-dev-RegisterLambdaFunctionQualifiedArn"
+      }
+    },
+    "CalculateUnderscorescoreLambdaFunctionQualifiedArn": {
+      "Description": "Current Lambda function version",
+      "Value": {
+        "Ref": "CalculateUnderscorescoreLambdaVersionBDY5zE64uPCGUj5VMXw5wbHDNJz56MfuX08fGWlN08"
+      },
+      "Export": {
+        "Name": "sls-my-lambda-service-dev-CalculateUnderscorescoreLambdaFunctionQualifiedArn"
       }
     },
     "ServiceEndpoint": {
@@ -400,7 +513,7 @@
         ]
       },
       "Export": {
-        "Name": "sls-lungHealthCalculator-dev-ServiceEndpoint"
+        "Name": "sls-my-lambda-service-dev-ServiceEndpoint"
       }
     }
   }

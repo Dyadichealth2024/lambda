@@ -1,15 +1,25 @@
-service: lungHealthCalculator
+service: my-lambda-service
 
 provider:
   name: aws
-  runtime: python3.9
+  runtime: python3.8
   region: us-west-2
+  # Do not include AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY here
+  environment:
+    # You can include other environment variables that your function needs
+    OTHER_ENV_VAR: some-value
 
 functions:
-  calculateLungHealth:
-    handler: handler.main
+  register:
+    handler: app.register
     events:
       - http:
-          path: calculate-lung-health
+          path: register
           method: post
-          cors: true
+
+  calculate_score:
+    handler: app.calculate_score
+    events:
+      - http:
+          path: calculate_score
+          method: post
