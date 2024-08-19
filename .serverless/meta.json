@@ -1,0 +1,195 @@
+{
+  "C:\\Users\\TEMP.DESKTOP-47LLUQH.002\\Desktop\\19.8\\lambda-main": {
+    "versionSfCore": null,
+    "versionFramework": "4.1.22",
+    "isWithinCompose": false,
+    "isCompose": false,
+    "composeOrgName": null,
+    "composeResolverProviders": {
+      "aws": {
+        "instance": {
+          "credentials": "<REDACTED>",
+          "serviceConfigFile": {
+            "service": "my-service",
+            "provider": {
+              "name": "aws",
+              "runtime": "python3.12",
+              "region": "us-west-2",
+              "iam": {
+                "role": {
+                  "statements": [
+                    {
+                      "Effect": "Allow",
+                      "Action": [
+                        "dynamodb:PutItem",
+                        "dynamodb:GetItem",
+                        "dynamodb:UpdateItem"
+                      ],
+                      "Resource": "arn:aws:dynamodb:us-west-2:011528274227:table/Users"
+                    }
+                  ]
+                }
+              },
+              "stage": "dev",
+              "versionFunctions": true
+            },
+            "functions": {
+              "registerUser": {
+                "handler": "handler.register",
+                "events": [
+                  {
+                    "http": {
+                      "path": "register",
+                      "method": "post"
+                    }
+                  }
+                ],
+                "name": "my-service-dev-registerUser"
+              },
+              "calculateLungHealth": {
+                "handler": "handler.calculate_lung_health_route",
+                "events": [
+                  {
+                    "http": {
+                      "path": "calculate_lung_health",
+                      "method": "post"
+                    }
+                  }
+                ],
+                "name": "my-service-dev-calculateLungHealth"
+              }
+            }
+          },
+          "configFileDirPath": "C:\\Users\\TEMP.DESKTOP-47LLUQH.002\\Desktop\\19.8\\lambda-main",
+          "config": {
+            "type": "aws"
+          },
+          "options": {
+            "function": "registerUser",
+            "data": "{\"body\": \"{\\\"firstName\\\": \\\"John\\\", \\\"lastName\\\": \\\"Doe\\\", \\\"companyName\\\": \\\"Example Corp\\\", \\\"email\\\": \\\"john.doe@example.com\\\", \\\"password\\\": \\\"yourpassword\\\"}\"}"
+          },
+          "stage": "dev",
+          "dashboard": null,
+          "isDefaultConfig": true
+        },
+        "resolvers": {}
+      }
+    },
+    "composeServiceName": null,
+    "servicePath": "C:\\Users\\TEMP.DESKTOP-47LLUQH.002\\Desktop\\19.8\\lambda-main",
+    "serviceConfigFileName": "serverless.yml",
+    "service": {
+      "service": "my-service",
+      "provider": {
+        "name": "aws",
+        "runtime": "python3.12",
+        "region": "us-west-2",
+        "iam": {
+          "role": {
+            "statements": [
+              {
+                "Effect": "Allow",
+                "Action": [
+                  "dynamodb:PutItem",
+                  "dynamodb:GetItem",
+                  "dynamodb:UpdateItem"
+                ],
+                "Resource": "arn:aws:dynamodb:us-west-2:011528274227:table/Users"
+              }
+            ]
+          }
+        },
+        "stage": "dev",
+        "versionFunctions": true
+      },
+      "functions": {
+        "registerUser": {
+          "handler": "handler.register",
+          "events": [
+            {
+              "http": {
+                "path": "register",
+                "method": "post"
+              }
+            }
+          ],
+          "name": "my-service-dev-registerUser"
+        },
+        "calculateLungHealth": {
+          "handler": "handler.calculate_lung_health_route",
+          "events": [
+            {
+              "http": {
+                "path": "calculate_lung_health",
+                "method": "post"
+              }
+            }
+          ],
+          "name": "my-service-dev-calculateLungHealth"
+        }
+      }
+    },
+    "serviceRawFile": "service: my-service\n\nprovider:\n  name: aws\n  runtime: python3.12\n  region: us-west-2\n  iam:\n    role:\n      statements:\n        - Effect: Allow\n          Action:\n            - dynamodb:PutItem\n            - dynamodb:GetItem\n            - dynamodb:UpdateItem\n          Resource: arn:aws:dynamodb:us-west-2:011528274227:table/Users\n\nfunctions:\n  registerUser:\n    handler: handler.register\n    events:\n      - http:\n          path: register\n          method: post\n\n  calculateLungHealth:\n    handler: handler.calculate_lung_health_route\n    events:\n      - http:\n          path: calculate_lung_health\n          method: post\n\n# The hello function is removed\n",
+    "command": [
+      "invoke"
+    ],
+    "options": {
+      "function": "registerUser",
+      "data": "{\"body\": \"{\\\"firstName\\\": \\\"John\\\", \\\"lastName\\\": \\\"Doe\\\", \\\"companyName\\\": \\\"Example Corp\\\", \\\"email\\\": \\\"john.doe@example.com\\\", \\\"password\\\": \\\"yourpassword\\\"}\"}"
+    },
+    "error": null,
+    "params": {},
+    "machineId": "266b5b4c00d99262189ba442babe88e0",
+    "accessKeyV2": "<REDACTED>",
+    "accessKeyV1": "<REDACTED>",
+    "orgId": "77f3172c-23f1-4672-8de7-a2bd7abf1bf3",
+    "orgName": "dyadichealth",
+    "userId": "bYH7kD3zXznngGpqxB",
+    "dashboard": {
+      "isEnabledForService": false,
+      "requiredAuthentication": false,
+      "orgFeaturesInUse": null,
+      "orgObservabilityIntegrations": null,
+      "serviceAppId": null,
+      "serviceProvider": null,
+      "instanceParameters": null
+    },
+    "userName": "dyadichealth",
+    "subscription": null,
+    "userEmail": "dyadichealth2024@gmail.com",
+    "serviceProviderAwsCredentials": "<REDACTED>",
+    "serviceProviderAwsAccountId": "011528274227",
+    "versionSf": "4.1.22",
+    "serviceProviderAwsCfStackName": "my-service-dev",
+    "integrations": {},
+    "serviceProviderAwsCfStackId": "arn:aws:cloudformation:us-west-2:011528274227:stack/my-service-dev/7e0716b0-5df1-11ef-b586-02314834975f",
+    "serviceProviderAwsCfStackCreated": "2024-08-19T06:08:45.526Z",
+    "serviceProviderAwsCfStackUpdated": "2024-08-19T09:45:43.281Z",
+    "serviceProviderAwsCfStackStatus": "UPDATE_COMPLETE",
+    "serviceProviderAwsCfStackOutputs": [
+      {
+        "OutputKey": "RegisterUserLambdaFunctionQualifiedArn",
+        "OutputValue": "arn:aws:lambda:us-west-2:011528274227:function:my-service-dev-registerUser:5",
+        "Description": "Current Lambda function version",
+        "ExportName": "sls-my-service-dev-RegisterUserLambdaFunctionQualifiedArn"
+      },
+      {
+        "OutputKey": "CalculateLungHealthLambdaFunctionQualifiedArn",
+        "OutputValue": "arn:aws:lambda:us-west-2:011528274227:function:my-service-dev-calculateLungHealth:5",
+        "Description": "Current Lambda function version",
+        "ExportName": "sls-my-service-dev-CalculateLungHealthLambdaFunctionQualifiedArn"
+      },
+      {
+        "OutputKey": "ServiceEndpoint",
+        "OutputValue": "https://hmgdrp86cl.execute-api.us-west-2.amazonaws.com/dev",
+        "Description": "URL of the service endpoint",
+        "ExportName": "sls-my-service-dev-ServiceEndpoint"
+      },
+      {
+        "OutputKey": "ServerlessDeploymentBucketName",
+        "OutputValue": "my-service-dev-serverlessdeploymentbucket-ik2msqwoy09y",
+        "ExportName": "sls-my-service-dev-ServerlessDeploymentBucketName"
+      }
+    ]
+  }
+}
