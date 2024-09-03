@@ -1,50 +1,57 @@
 import json
-import boto3
 import logging
+import boto3
 from botocore.exceptions import ClientError
 
-# Set up logging
+# Configure logging
 logging.basicConfig(level=logging.DEBUG)
 
-# Initialize DynamoDB resource
-dynamodb = boto3.resource('dynamodb')
-table = dynamodb.Table('Users')
+# Initialize DynamoDB client and resource
+dynamodb_client = boto3.client('dynamodb', region_name='us-west-2')
+dynamodb_resource = boto3.resource('dynamodb', region_name='us-west-2')
+newsletter_table = dynamodb_resource.Table('landingnewsletter')
 
-def register(event, context):
+# Initialize SES client
+ses_client = boto3.client('ses', region_name='us-west-2')
+
+# Handler to subscribe a user
+def subscribe(event, context):
     logging.debug("Received event: %s", json.dumps(event))
     try:
         body = json.loads(event['body'])
-        logging.debug("Parsed body: %s", json.dumps(body))
+        email = body['email']
+        first_name = body['firstName']
+        last_name = body['lastName']
 
-        first_name = body.get('firstName')
-        last_name = body.get('lastName')
-        company_name = body.get('companyName')
-        email = body.get('email')
-        password = body.get('password')  # Ideally, hash the password before storing it
-
-        if None in (first_name, last_name, company_name, email, password):
-            logging.error("Validation failed, missing fields")
-            return {
-                "statusCode": 400,
-                "headers": {
-                    "Access-Control-Allow-Origin": "*",
-                    "Access-Control-Allow-Headers": "Content-Type",
-                    "Access-Control-Allow-Methods": "OPTIONS,POST"
-                },
-                "body": json.dumps({"error": "Invalid input"})
-            }
-
-        # Save user to DynamoDB
-        table.put_item(
+        # Save to DynamoDB
+        response = newsletter_table.put_item(
             Item={
                 'email': email,
-                'firstName': first_name,
-                'lastName': last_name,
-                'companyName': company_name,
-                'password': password,
+                'first_name': first_name,
+                'last_name': last_name,
+                'verification_status': 'Pending'
             }
         )
-        logging.info("User registered successfully: %s", email)
+        logging.info("User subscribed: %s", json.dumps(response))
+
+        # Send verification email
+        verify_link = f"https://your-frontend-url.com/verify?email={email}"
+        subject = "Please verify your subscription"
+        body_text = f"Hello {first_name},\nPlease verify your email by clicking the link below:\n{verify_link}"
+        body_html = f"<html><body><h3>Hello {first_name},</h3><p>Please verify your email by clicking the link below:</p><a href='{verify_link}'>Verify Email</a></body></html>"
+
+        ses_response = ses_client.send_email(
+            Source='info@dyadic.health',  # Ensure this email is verified in SES
+            Destination={'ToAddresses': [email]},
+            Message={
+                'Subject': {'Data': subject},
+                'Body': {
+                    'Text': {'Data': body_text},
+                    'Html': {'Data': body_html}
+                }
+            }
+        )
+        logging.info("Verification email sent: %s", json.dumps(ses_response))
 
         return {
             "statusCode": 200,
@@ -53,11 +60,10 @@ def register(event, context):
                 "Access-Control-Allow-Headers": "Content-Type",
                 "Access-Control-Allow-Methods": "OPTIONS,POST"
             },
-            "body": json.dumps({"message": "User registered successfully"})
+            "body": json.dumps({"message": "Verification email sent"})
         }
-
     except ClientError as e:
-        logging.error("DynamoDB ClientError: %s", str(e))
+        logging.error("DynamoDB/SES error: %s", e.response['Error']['Message'])
         return {
             "statusCode": 500,
             "headers": {
@@ -65,7 +71,7 @@ def register(event, context):
                 "Access-Control-Allow-Headers": "Content-Type",
                 "Access-Control-Allow-Methods": "OPTIONS,POST"
             },
-            "body": json.dumps({"error": "Internal server error: " + str(e)})
+            "body": json.dumps({"error": "DynamoDB/SES error: " + e.response['Error']['Message']})
         }
     except Exception as e:
         logging.error("Exception: %s", str(e))
@@ -79,40 +85,27 @@ def register(event, context):
             "body": json.dumps({"error": "Internal server error: " + str(e)})
         }
 
-def calculate_lung_health_route(event, context):
+# Handler to verify a user
+def verify(event, context):
     logging.debug("Received event: %s", json.dumps(event))
     try:
-        body = json.loads(event['body'])
-        logging.debug("Parsed body: %s", json.dumps(body))
+        email = event['queryStringParameters']['email']
 
-        age = body.get('age')
-        gender = body.get('gender')
-        pulse = body.get('pulse')
-        breathHoldTime = body.get('breathHoldTime')
-
-        if None in (age, gender, pulse, breathHoldTime):
-            logging.error("Validation failed, missing fields")
-            return {
-                "statusCode": 400,
-                "headers": {
-                    "Access-Control-Allow-Origin": "*",
-                    "Access-Control-Allow-Headers": "Content-Type",
-                    "Access-Control-Allow-Methods": "OPTIONS,POST"
-                },
-                "body": json.dumps({"error": "Invalid input"})
-            }
-
-        score = (float(breathHoldTime) / float(pulse)) * 100
-        logging.info("Lung health score calculated: %f", score)
+        response = newsletter_table.update_item(
+            Key={'email': {'S': email}},
+            UpdateExpression="set verification_status = :s",
+            ExpressionAttributeValues={':s': {'S': 'Verified'}}
+        )
+        logging.info("Verification status updated: %s", json.dumps(response))
 
         return {
             "statusCode": 200,
             "headers": {
                 "Access-Control-Allow-Origin": "*",
                 "Access-Control-Allow-Headers": "Content-Type",
-                "Access-Control-Allow-Methods": "OPTIONS,POST"
+                "Access-Control-Allow-Methods": "OPTIONS,GET"
             },
-            "body": json.dumps({"score": score})
+            "body": json.dumps({"message": "Email verified successfully"})
         }
     except Exception as e:
         logging.error("Exception: %s", str(e))
@@ -121,13 +114,19 @@ def calculate_lung_health_route(event, context):
             "headers": {
                 "Access-Control-Allow-Origin": "*",
                 "Access-Control-Allow-Headers": "Content-Type",
-                "Access-Control-Allow-Methods": "OPTIONS,POST"
+                "Access-Control-Allow-Methods": "OPTIONS,GET"
             },
             "body": json.dumps({"error": "Internal server error: " + str(e)})
         }
 
+# Example function to test the setup (optional)
 def hello(event, context):
     return {
         "statusCode": 200,
+        "headers": {
+            "Access-Control-Allow-Origin": "*",
+            "Access-Control-Allow-Headers": "Content-Type",
+            "Access-Control-Allow-Methods": "OPTIONS,GET"
+        },
         "body": json.dumps({"message": "Hello, World!"})
     }

@@ -1,8 +1,8 @@
-service: my-service
+service: my-service  # Name of your service
 
 provider:
   name: aws
-  runtime: python3.12
+  runtime: python3.9
   region: us-west-2
   iam:
     role:
@@ -12,21 +12,49 @@ provider:
             - dynamodb:PutItem
             - dynamodb:GetItem
             - dynamodb:UpdateItem
-          Resource: arn:aws:dynamodb:us-west-2:011528274227:table/Users
+            - dynamodb:Query
+          Resource:
+            - arn:aws:dynamodb:us-west-2:982081078723:table/landingnewsletter
+        - Effect: Allow
+          Action:
+            - ses:SendEmail
+            - ses:SendRawEmail
+          Resource: "*"
 
 functions:
-  registerUser:
-    handler: handler.register
+  subscribeUser:
+    handler: handler.subscribe
     events:
       - http:
-          path: register
+          path: subscribe
           method: post
+          cors:
+            origin: '*'  # Use wildcard for development; specific origins are handled in the Lambda function
+            headers:
+              - Content-Type
+              - X-Amz-Date
+              - Authorization
+              - X-Api-Key
+              - X-Amz-Security-Token
+              - X-Amz-User-Agent
+            allowCredentials: false
 
-  calculateLungHealth:
-    handler: handler.calculate_lung_health_route
+  verifyUser:
+    handler: handler.verify
     events:
       - http:
-          path: calculate_lung_health
-          method: post
+          path: verify
+          method: get
+          cors:
+            origin: '*'  # Use wildcard for development; specific origins are handled in the Lambda function
+            headers:
+              - Content-Type
+              - X-Amz-Date
+              - Authorization
+              - X-Api-Key
+              - X-Amz-Security-Token
+              - X-Amz-User-Agent
+            allowCredentials: false
 
-# The hello function is removed
+plugins:
+  - serverless-offline
